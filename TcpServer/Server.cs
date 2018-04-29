@@ -21,6 +21,8 @@ namespace TcpServerTest
         // TCPリスナー
         private readonly TcpListener _listener;
 
+        List<Session> sessions = new List<Session>();
+
         public Server(IPEndPoint endpoint, Func<TRequest, TResponse> processor)
         {
             _endpoint = endpoint;
@@ -29,20 +31,16 @@ namespace TcpServerTest
         }
 
         // クライアントからリクエストを受信してレスポンスを送信する
-        private void Receive(TcpClient client)
+        private void Receive(Session session)
         {
-            using (client)
-            using (var stream = client.GetStream())
-            {
-                // 3. クライアントからリクエストを受信する
-                var request = stream.ReadObject<TRequest>();
+            // 3. クライアントからリクエストを受信する
+            var request = session.Stream.ReadObject<TRequest>();
 
-                // 4. リクエストを処理してレスポンスを作る
-                var response = _processor(request);
+            // 4. リクエストを処理してレスポンスを作る
+            var response = _processor(request);
 
-                // 5. クライアントにレスポンスを送信する
-                stream.WriteObject(response);
-            }
+            // 5. クライアントにレスポンスを送信する
+            session.Stream.WriteObject(response);
         }
 
         // 接続を待つ
@@ -56,9 +54,11 @@ namespace TcpServerTest
             {
                 // 2. クライアントからの接続を受け入れる
                 var client = await _listener.AcceptTcpClientAsync();
+                var session = new Session(client);
+                sessions.Add(session);
                 Console.WriteLine($"Server accepted:");
 
-                var task = Task.Run(() => Receive(client));
+                var task = Task.Run(() => Receive(session));
 
                 // Taskの管理やエラー処理は省略
             }

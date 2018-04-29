@@ -10,37 +10,43 @@ using CommonLib;
 namespace TcpClientTest
 {
     // クライアント
-    public class Client<TRequest, TResponse>
+    public class Client<TRequest, TResponse> : IDisposable
     {
         // 接続先のエンドポイント
         private readonly IPEndPoint _endpoint;
+        private TcpClient client;
+        private NetworkStream stream;
 
         public Client(IPEndPoint endpoint)
         {
             _endpoint = endpoint;
+            client = new TcpClient();
         }
 
         // サーバにリクエストを送信してレスポンスを受信する
-        public async Task<TResponse> SendAsync(TRequest request)
+        public TResponse SendMessage(TRequest request)
         {
-            using (var client = new TcpClient())
-            {
-                // 1. サーバに接続
-                await client.ConnectAsync(_endpoint.Address, _endpoint.Port);
+            // 2. サーバにリクエストを送信する
+            Console.WriteLine($"Client send: {request}");
+            stream.WriteObject(request);
 
-                using (var stream = client.GetStream())
-                {
-                    // 2. サーバにリクエストを送信する
-                    Console.WriteLine($"Client send: {request}");
-                    stream.WriteObject(request);
+            // 3. サーバからレスポンスを受信する
+            var response = stream.ReadObject<TResponse>();
+            Console.WriteLine($"Client received: {response}");
 
-                    // 3. サーバからレスポンスを受信する
-                    var response = stream.ReadObject<TResponse>();
-                    Console.WriteLine($"Client received: {response}");
+            return response;
+        }
 
-                    return response;
-                }
-            }
+        public async Task ConnectAsync()
+        {
+            await client.ConnectAsync(_endpoint.Address, _endpoint.Port);
+            stream = client.GetStream();
+        }
+
+        public void Dispose()
+        {
+            client?.Dispose();
+            stream?.Dispose();
         }
     }
 }

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2002
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServerTest", "TcpServer\TcpServerTest.csproj", "{BA164F01-0C7C-4CCF-BCE4-D9075D7ADA7B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLib", "CommonLib\CommonLib.csproj", "{73A0C8C0-E8AD-4998-96DB-05F6CE9A05FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BA164F01-0C7C-4CCF-BCE4-D9075D7ADA7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA164F01-0C7C-4CCF-BCE4-D9075D7ADA7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA164F01-0C7C-4CCF-BCE4-D9075D7ADA7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA164F01-0C7C-4CCF-BCE4-D9075D7ADA7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73A0C8C0-E8AD-4998-96DB-05F6CE9A05FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73A0C8C0-E8AD-4998-96DB-05F6CE9A05FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73A0C8C0-E8AD-4998-96DB-05F6CE9A05FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73A0C8C0-E8AD-4998-96DB-05F6CE9A05FC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DB945DF4-D45C-4573-B5D2-21882168E09D}
+	EndGlobalSection
+EndGlobal
