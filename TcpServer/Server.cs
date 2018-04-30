@@ -1,73 +1,55 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CommonLib;
 
 namespace TcpServerTest
 {
     // サーバ
-    public class Server<TRequest, TResponse>
+    public class Server : IDisposable
     {
-        // 接続を待つエンドポイント
-        private readonly IPEndPoint _endpoint;
+        readonly CancellationTokenSource tokenSource;
+        readonly IList<IListener> listeners;
 
-        // リクエストからレスポンスを作成する処理
-        private readonly Func<TRequest, TResponse> _processor;
-
-        // TCPリスナー
-        private readonly TcpListener _listener;
-
-        List<Session> sessions = new List<Session>();
-
-        public Server(IPEndPoint endpoint, Func<TRequest, TResponse> processor)
+        public Server()
         {
-            _endpoint = endpoint;
-            _processor = processor;
-            _listener = new TcpListener(_endpoint);
+            tokenSource = new CancellationTokenSource();
+            listeners = new List<IListener>();
         }
 
-        // クライアントからリクエストを受信してレスポンスを送信する
-        private void Receive(Session session)
+        public void AddListener<TRequest, TResponse>(
+            IPEndPoint endpoint,
+            IRequestResponserFactory<TRequest, TResponse> requestResponserFactory)
         {
-            // 3. クライアントからリクエストを受信する
-            var request = session.Stream.ReadObject<TRequest>();
+            var listener = new Listener<TRequest, TResponse>(
+                endpoint,
+                requestResponserFactory,
+                tokenSource.Token);
 
-            // 4. リクエストを処理してレスポンスを作る
-            var response = _processor(request);
+            listener.StartListening();
 
-            // 5. クライアントにレスポンスを送信する
-            session.Stream.WriteObject(response);
+            listeners.Add(listener);
         }
 
-        // 接続を待つ
-        public async Task Listen()
+        public void Dispose()
         {
-            Console.WriteLine($"Server listen:");
-            // 1. クライアントからの接続を待つ
-            _listener.Start();
+            tokenSource.Cancel();
 
-            while (true)
+            try
             {
-                // 2. クライアントからの接続を受け入れる
-                var client = await _listener.AcceptTcpClientAsync();
-                var session = new Session(client);
-                sessions.Add(session);
-                Console.WriteLine($"Server accepted:");
-
-                var task = Task.Run(() => Receive(session));
-
-                // Taskの管理やエラー処理は省略
+                Task.WaitAll(
+                    listeners.Select(i => i.ListenerTask).Where(i => i != null).ToArray());
             }
-        }
-
-        // 終了する
-        public void Close()
-        {
-            _listener.Stop();
+            finally
+            {
+                tokenSource.Dispose();
+            }
         }
     }
 }
