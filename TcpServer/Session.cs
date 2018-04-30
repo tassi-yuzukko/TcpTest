@@ -18,6 +18,8 @@ namespace TcpServerTest
 
         readonly CancellationToken cancellationToken;
 
+        readonly Task sessionTask;
+
         public Session(
             TcpClient client,
             IRequestResponser<TRequest, TResponse> requestResponser,
@@ -28,9 +30,16 @@ namespace TcpServerTest
             this.cancellationToken = cancellationToken;
 
             stream = client.GetStream();
-            cancellationToken.Register(() => stream.Dispose()); // 終了処理を予約しておく
 
-            Task.Run(() => Receive(), cancellationToken);
+            // 終了処理を予約しておく
+            cancellationToken.Register(() =>
+            {
+                sessionTask?.Wait();
+
+                stream.Dispose();
+            });
+
+            sessionTask = Task.Run(() => Receive(), cancellationToken);
         }
 
         // クライアントからリクエストを受信してレスポンスを送信する
@@ -48,6 +57,11 @@ namespace TcpServerTest
 
                     // 5. クライアントにレスポンスを送信する
                     stream.WriteObject(response);
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
                 }
 
                 Thread.Sleep(10);

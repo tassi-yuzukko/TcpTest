@@ -46,7 +46,7 @@ namespace TcpServerTest
             // 終了処理を予約しておく
             cancellationToken.Register(() =>
             {
-                _litenerTask.Wait();
+                _litenerTask?.Wait();
 
                 listener.Stop();
             });
@@ -57,7 +57,7 @@ namespace TcpServerTest
         {
             Console.WriteLine($"Listener listen:");
 
-            _litenerTask = new Task(async () =>
+            _litenerTask = Task.Run(async () =>
             {
                 while (true)
                 {
@@ -82,10 +82,10 @@ namespace TcpServerTest
                     {
                         break;
                     }
+
+                    Thread.Sleep(10);
                 }
             });
-
-            ListenerTask.Start();
         }
     }
 }
